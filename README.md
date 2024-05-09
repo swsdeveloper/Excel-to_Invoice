@@ -1,1 +1,4 @@
-Convert Excel spreadsheet file (xlsx) into PDF Invoice
+# What is this project?
+
+This app converts an Excel spreadsheet file (xlsx) into
+a PDF Invoice.

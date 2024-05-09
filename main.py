@@ -1,11 +1,9 @@
 import functions as fn
-import pypdf
+import glob
 
+file_paths = glob.glob("Excel_Files/*.xlsx")
 
-
-file_list = ['10001-2023.1.18.xlsx', '10002-2023.1.18.xlsx', '10003-2023.1.18.xlsx']
-
-for filename in file_list:
-    excel_dict = fn.get_excel_file(filename)
-    if excel_dict:
-        invoice_file = generate_invoice(excel_dict)
+for file_path in file_paths:
+    invoice_dict = fn.get_excel_file(file_path)
+    if invoice_dict:
+        invoice_file = fn.generate_invoice(invoice_dict)
