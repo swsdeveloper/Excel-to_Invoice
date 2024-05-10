@@ -52,6 +52,22 @@ def get_excel_file(filepath: str) -> {}:
     df = pd.read_excel(excel_filepath, sheet_name="Sheet 1", header=0, engine='openpyxl')
 
     line_items = []
+
+    # Get column titles
+    column_titles = df.columns  # column titles is an iterable (type=pandas.Index)
+
+    # Replace underscores with blanks and force to title case
+    column_titles = [title.replace('_', ' ').title() for title in column_titles]
+
+    # Make this 1st line item in line_items list
+    column_titles_dict = {'product_id': column_titles[0],
+                          'product_name': column_titles[1],
+                          'units_purchased': column_titles[2],
+                          'unit_price': column_titles[3],
+                          'total_price': column_titles[4]
+                          }
+    line_items.append(column_titles_dict)
+
     for _, record in df.iterrows():
         line_item_dict = {'product_id': record['product_id'],
                           'product_name': record['product_name'],
@@ -97,29 +113,37 @@ def generate_invoice(inv_dict):
     line2 = "Date " + inv_date
     pdf.cell(w=0, h=8, txt=line2, align="L", ln=1, border=0)
 
+    pdf.ln(6)
+
     pdf.set_font(family="Times", style="B", size=14)
     pdf.set_text_color(0, 0, 0)  # black (rgb)
 
     line_items = inv_dict['line items']
 
-    # line3 =
-    # pdf.cell(w=0, h=14, txt=str(line3), align="L", ln=1)
+    pdf.set_text_color(30, 30, 30)  # dark grey  (80,80,80 -- light grey)
 
-    pdf.set_font(family="Times", style="", size=12)
-    pdf.set_text_color(80, 80, 80)  # grey
-
-    for line_item in line_items:
+    for index, line_item in enumerate(line_items):
         prod_id = line_item['product_id']
         prod_name = line_item['product_name']
         quantity = line_item['units_purchased']
         unit_price = line_item['unit_price']
         total_price = line_item['total_price']
 
-        pdf.cell(w=30, h=10, txt=str(prod_id), align="L")
-        pdf.cell(w=90, h=10, txt=prod_name, align="L")
-        pdf.cell(w=20, h=10, txt=str(quantity), align="L")
-        pdf.cell(w=30, h=10, txt=str(unit_price), align="L")
-        pdf.cell(w=30, h=10, txt=str(total_price), align="L", ln=1)
+        if index == 0:
+            pdf.set_font(family="Times", style="B", size=12)
+        else:
+            pdf.set_font(family="Times", style="", size=12)
+
+        pdf.cell(w=30, h=10, txt=str(prod_id), align="L", border=1)
+        pdf.cell(w=50, h=10, txt=str(prod_name), align="L", border=1)
+        pdf.cell(w=50, h=10, txt=str(quantity), align="R", border=1)
+        pdf.cell(w=30, h=10, txt=str(unit_price), align="R", border=1)
+        pdf.cell(w=30, h=10, txt=str(total_price), align="R", border=1, ln=1)
+
+    pdf.ln(6)
+
+    line4 = "Thank you."
+    pdf.cell(w=0, h=8, txt=line4, align="L", ln=1, border=0)
 
     pdf.output(f"PDF_Invoices/{inv_num}-{inv_date}.pdf")
 
