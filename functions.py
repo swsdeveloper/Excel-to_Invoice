@@ -77,6 +77,15 @@ def get_excel_file(filepath: str) -> {}:
                           }
         line_items.append(line_item_dict)
 
+    # Append last line: Total Due
+    line_item_dict = {'product_id': "",
+                      'product_name': "",
+                      'units_purchased': "",
+                      'unit_price': "",
+                      'total_price': df['total_price'].sum()
+                      }
+    line_items.append(line_item_dict)
+
     invoice_dictionary = {'inv num': inv_num, 'inv date': inv_date, 'line items': line_items}
 
     return invoice_dictionary
@@ -122,6 +131,7 @@ def generate_invoice(inv_dict):
 
     pdf.set_text_color(30, 30, 30)  # dark grey  (80,80,80 -- light grey)
 
+    total_due = 0.0
     for index, line_item in enumerate(line_items):
         prod_id = line_item['product_id']
         prod_name = line_item['product_name']
@@ -135,16 +145,28 @@ def generate_invoice(inv_dict):
             pdf.set_font(family="Times", style="", size=12)
 
         pdf.cell(w=30, h=10, txt=str(prod_id), align="L", border=1)
-        pdf.cell(w=50, h=10, txt=str(prod_name), align="L", border=1)
-        pdf.cell(w=50, h=10, txt=str(quantity), align="R", border=1)
+        pdf.cell(w=60, h=10, txt=str(prod_name), align="L", border=1)
+        pdf.cell(w=40, h=10, txt=str(quantity), align="R", border=1)
         pdf.cell(w=30, h=10, txt=str(unit_price), align="R", border=1)
         pdf.cell(w=30, h=10, txt=str(total_price), align="R", border=1, ln=1)
 
+        if index == len(line_items) - 1:
+            total_due = float(total_price)
+
     pdf.ln(6)
 
-    line4 = "Thank you."
+    # Add total due
+    pdf.set_font(family="Times", style="B", size=14)
+    pdf.set_text_color(0, 0, 0)  # black (rgb)
+
+    line4 = f"The total due is ${total_due:,.2f}."
     pdf.cell(w=0, h=8, txt=line4, align="L", ln=1, border=0)
 
+    # Add company name and logo
+    pdf.cell(w=25, h=8, txt="AESOPS Solutions ", ln=0, border=0)
+    pdf.image("pythonhow.png", x=52, w=10)
+
+    # Output the invoice file to disk
     pdf.output(f"PDF_Invoices/{inv_num}-{inv_date}.pdf")
 
     return
